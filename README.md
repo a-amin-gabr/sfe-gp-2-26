@@ -1,15 +1,19 @@
 # Sentiment Analysis System
 
-A lightweight and fast Sentiment Analysis web app that classifies text as **Positive**, **Negative**, or **Neutral**. Built with a **Streamlit** frontend and a **FastAPI** backend powered by the NLTK VADER lexicon — no heavy model weights, no GPU required.
+A lightweight sentiment analysis system with a **Streamlit** frontend, a **FastAPI** AI service, and an **ASP.NET Core** backend with auth, database logging, and a protected analysis route.
 
 ---
 
 ## Project Structure
 
 ```text
-├── app.py            # Streamlit frontend (User Interface)
-├── api.py            # FastAPI backend (sentiment analysis logic & API endpoints)
-├── requirements.txt  # Project dependencies
+├── AI/
+│   ├── app.py             # Streamlit frontend (User Interface)
+│   ├── api.py             # FastAPI AI service
+│   └── requirements.txt   # Python dependencies
+├── Backend/
+│   └── SentimentAPI/
+│       └── Sentiment_API/ # ASP.NET Core backend
 └── README.md         # Setup and usage instructions
 ```
 
@@ -20,7 +24,7 @@ A lightweight and fast Sentiment Analysis web app that classifies text as **Posi
 ### 1. Create a Conda Environment
 
 ```bash
-conda create --name ai-task python=3.12 -y
+conda create --name ai-task -c defaults python=3.12 -y
 ```
 
 ### 2. Activate the Environment
@@ -29,60 +33,101 @@ conda create --name ai-task python=3.12 -y
 conda activate ai-task
 ```
 
-### 3. Install Dependencies
+### 3. Install the .NET SDK
+
+```bash
+wget https://packages.microsoft.com/config/ubuntu/24.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+rm packages-microsoft-prod.deb
+sudo apt update
+sudo apt install -y dotnet-sdk-8.0
+```
+
+### 4. Install Python Dependencies
 
 Navigate to the project root directory and run:
 
 ```bash
-pip install -r requirements.txt
+pip install -r AI/requirements.txt
 ```
+
+### 5. Configure the Backend Database
+
+The ASP.NET backend uses SQL Server. Update [Backend/SentimentAPI/Sentiment_API/appsettings.json](/workspaces/sfe-gp-2-26/Backend/SentimentAPI/Sentiment_API/appsettings.json) if your local SQL Server connection is different.
 
 ---
 
 ## Running the Application
 
-The app requires **two processes** running at the same time — open two terminal windows.
+The system requires **three processes** running at the same time — open three terminal windows.
 
-### Terminal 1 — Start the FastAPI Backend
+### Terminal 1 — Start the ASP.NET Backend
 
 ```bash
-uvicorn api:app --reload
+cd Backend/SentimentAPI/Sentiment_API
+dotnet run
 ```
 
-The API server will be available at: `http://127.0.0.1:8000`
+The backend exposes authentication, analysis, and Swagger endpoints. In development, Swagger is available when the app runs in Development mode.
 
-### Terminal 2 — Start the Streamlit Frontend
+### Terminal 2 — Start the FastAPI AI Service
 
 ```bash
-streamlit run app.py
+uvicorn AI.api:app --reload
+```
+
+The AI service will be available at: `http://127.0.0.1:8000`
+
+### Terminal 3 — Start the Streamlit Frontend
+
+```bash
+streamlit run AI/app.py
 ```
 
 The web interface will automatically open in your browser at: `http://localhost:8501`
 
-> **Important:** Start the FastAPI backend **before** opening the Streamlit app.
+> **Important:** Start the AI service and backend before opening the Streamlit app.
+
+---
+
+## Published Endpoints
+
+### ASP.NET Backend
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/swagger` | Swagger UI for API exploration in Development mode |
+| `POST` | `/api/auth/register` | Register a new user |
+| `POST` | `/api/auth/login` | Log in and receive a JWT token |
+| `POST` | `/api/analysis/analyze` | Analyze text and save the result to the database |
+
+The `/api/analysis/analyze` endpoint is protected with JWT authentication.
+
+### FastAPI AI Service
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/predict` | Analyze sentiment for the submitted text |
+| `GET` | `/` | Health check |
 
 ---
 
 ## How to Use
 
-1. Open the app in your browser (`http://localhost:8501`).
-2. Type any English sentence in the text box  
+1. Start the ASP.NET backend and the AI service.
+2. Open the app in your browser (`http://localhost:8501`).
+3. Type any English sentence in the text box  
    *(e.g., "I love this!" or "This was a terrible experience.")*
-3. Click the **Analyze** button.
-4. The result card will display the sentiment (**Positive / Negative / Neutral**) along with a confidence score.
+4. Click the **Analyze** button.
+5. The result card will display the sentiment (**Positive / Negative / Neutral**) along with a confidence score.
+
+If you call the ASP.NET analysis endpoint directly, include the JWT token returned by `/api/auth/login` in the `Authorization` header as `Bearer <token>`.
 
 ---
 
 ## API Reference
 
-The FastAPI backend exposes the following endpoints:
-
-| Method | Path       | Description                        |
-|--------|------------|------------------------------------|
-| `POST` | `/predict` | Analyze the sentiment of a text    |
-| `GET`  | `/`        | Health check                       |
-
-### Example Request
+### Example AI Service Request
 
 ```bash
 curl -X POST "http://127.0.0.1:8000/predict" \
@@ -90,7 +135,7 @@ curl -X POST "http://127.0.0.1:8000/predict" \
      -d '{"text": "I really enjoyed this project!"}'
 ```
 
-### Example Response
+### Example AI Service Response
 
 ```json
 {
