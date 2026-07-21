@@ -1,4 +1,3 @@
-```markdown
 # Sentiment Analysis System
 
 A lightweight sentiment analysis system with a **Streamlit** frontend, a **FastAPI** AI service, and an **ASP.NET Core** backend with auth, database logging, and a protected analysis route.
@@ -206,7 +205,5 @@ curl -X POST "[http://127.0.0.1:8000/predict](http://127.0.0.1:8000/predict)" \
 | Mohammed Khaled | Backend Engineer | [MohammeeeeeedKhaled](https://github.com/MohammeeeeeedKhaled) |
 | Karim Ehab | AI Engineer | [Karim-Ehab-AI](https://github.com/Karim-Ehab-AI) |
 | Amr Khaled | Mobile App | [amr-khaled3](https://github.com/amr-khaled3) |
-
-```
 
 ```
